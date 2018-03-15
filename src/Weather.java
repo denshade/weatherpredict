@@ -44,13 +44,15 @@ public class Weather
             } else {
                 BasicNetwork network = new BasicNetwork();
                 network.addLayer(new BasicLayer(null,true,3));
-                network.addLayer(new BasicLayer(new ActivationSigmoid(),true,5));
-                network.addLayer(new BasicLayer(new ActivationSigmoid(),true,1));
+                network.addLayer(new BasicLayer(new ActivationSigmoid(),true,10));
+                network.addLayer(new BasicLayer(new ActivationSigmoid(),true,10));
+                network.addLayer(new BasicLayer(new ActivationSigmoid(),true,10));
+                network.addLayer(new BasicLayer(new ActivationSigmoid(),true,7));
                 network.getStructure().finalizeStructure();
                 network.reset();
 
                 final MLDataSet trainingSet = TrainingSetUtil.loadCSVTOMemory(
-                        CSVFormat.ENGLISH, args[0], true, 3, 1);
+                        CSVFormat.ENGLISH, args[0], true, 3, 7);
                 final Backpropagation train = new Backpropagation(network, trainingSet);
 
                 //final BackPropagation train = new ResilientPropagation(network, trainingSet);
@@ -61,12 +63,23 @@ public class Weather
                     train.iteration();
                     System.out.println("Epoch #" + epoch + " Error:" + train.getError());
                     epoch++;
-                } while(train.getError() > 0.01);
+                } while(train.getError() > 0.07);
                 train.finishTraining();
                 BasicMLData data = new BasicMLData(3);
-                data.setData(new double[]{0.3302469136,0.1125265393,0.5142857143});
-                MLData d = network.compute(new BasicMLData(3));
+                //data.setData(new double[]{0.3302469136,0.1125265393,0.5142857143});
+                data.setData(new double[]{0.2962962963,0.08067940552,0.1428571429});
+                MLData d = network.compute(data);
+                int suggestionIndex = 0;
+                double bestSug = 0;
+                double[] results = d.getData();
+                for (int l= 0; l < results.length; l++)
+                {
+                    if (results[l] > bestSug) {
+                        bestSug = results[l]; suggestionIndex = l;
+                    }
+                }
                 System.out.println(d);
+                System.out.println("[" + ((suggestionIndex - 1)*5) + "," + ((suggestionIndex)*5) +"]");
             }
 
             Encog.getInstance().shutdown();
